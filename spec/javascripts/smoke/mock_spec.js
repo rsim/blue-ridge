@@ -127,7 +127,44 @@ Screw.Unit(function() {
 				myMock.shout();
 			});
 		});
-		
+
+		describe("mock with callback function", function() {
+			before(function() {
+				obj = { fun: function() { return 1; } };
+			});
+
+			it("should mock function call with callback function", function() {
+				mock(obj).should_receive("fun").and_return(function() { return 2; });
+				expect(obj.fun()).to(equal, 2);
+			});
+
+			it("should pass arguments to callback function", function() {
+				mock(obj).should_receive("fun").and_return(function(a) { return a; });
+				expect(obj.fun(3)).to(equal, 3);
+			});
+		});
+
+		describe("define several callback functions for the same method", function() {
+			before(function() {
+				obj = { fun: function(x) { return x; } };
+			});
+			it("should call original function when callback function returns undefined", function() {
+				mock(obj).should_receive("fun").and_return(function(x) {
+					return x === 1 ? "one" : undefined;
+				});
+				expect(obj.fun(1)).to(equal, "one");
+				expect(obj.fun(2)).to(equal, 2);
+			});
+			it("should return value from first callback function which returns value other than undefined", function() {
+				var m = mock(obj);
+				m.should_receive("fun").and_return(function(x) { return x === 1 ? "one" : undefined; });
+				m.should_receive("fun").and_return(function(x) { return x === 2 ? "two" : undefined; });
+				expect(obj.fun(2)).to(equal, "two");
+				expect(obj.fun(1)).to(equal, "one");
+				expect(obj.fun(3)).to(equal, 3);
+			});
+		});
+
 		describe("proper teardown of mocks on global variables", function(){
 			var SomeGlobal = { say: "hello", shout: function() { return this.say.toUpperCase(); } };
 			
