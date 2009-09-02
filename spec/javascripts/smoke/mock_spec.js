@@ -175,6 +175,19 @@ Screw.Unit(function() {
 				expect(obj.shout()).to(equal, "HELLO");
 			});
 			
+			it("should replace the original functionality to the object when several expectations are set", function(){
+				var obj = { say: "hello", shout: function() { return this.say.toUpperCase(); } };
+				var m = mock(obj);
+				m.should_receive("shout").with_arguments(1).and_return("some string 1");
+				m.should_receive("shout").with_arguments(2).and_return("some string 2");
+				expect(obj.shout(1)).to(equal, "some string 1");
+				expect(obj.shout(2)).to(equal, "some string 2");
+
+				obj._resetMocks();
+				Smoke.mocks = [];
+
+				expect(obj.shout()).to(equal, "HELLO");
+			});
 		});
 		
 		describe("anonymous functions", function() {
